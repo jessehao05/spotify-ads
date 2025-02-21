@@ -8,7 +8,7 @@ from datetime import datetime
 from flask import Flask, redirect, request, jsonify, session
 
 app = Flask(__name__)
-app.secret_key = '323k235f2l-702f-18329-af23-4jg9slk40'
+app.secret_key = os.getenv("SECRET_KEY")
 
 load_dotenv()
 
