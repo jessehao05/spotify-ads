@@ -11,22 +11,10 @@
 <body>
     <div class="card">
       <div class="top-text">Currently playing: </div>
-      {% if data.currently_playing_type == 'track' %}
-        <img class="song-img" src="{{data.item.album.images[0].url}}">
-      {% else %}
-        <img class="song-img" src="{{ url_for('static', filename='squid_tongue_squareFormat.jpg') }}">
-      {% endif %}
+        <img class="song-img" src="">
       <div class="bottom-text">
-        {% if data.currently_playing_type == 'track' %}
-          <div class="title-text">{{data.item.name}}</div>
-          <div class="artist-text">{{data.item.artists[0].name}}</div>
-        {% elif data.currently_playing_type == 'ad' %}
-          <div class="title-text">an ad</div>
-          <div class="artist-text">no artist :)</div>
-        {% else %}
-          <div class="title-text">nothing here</div>
-          <div class="artist-text">Spotify isn't running :)</div>
-        {% endif %}
+          <div class="title-text"></div>
+          <div class="artist-text"></div>
       </div>
       <div class="progress-bar">
         <div class="progress-filled"></div>
@@ -34,18 +22,43 @@
     </div>
 
     <script>
-      const songData = {{ data | tojson | safe }};
-      const progressBar = document.querySelector('.progress-bar');
-      const progressFilled = document.querySelector('.progress-filled');
+      function getSongInfo(data) {
+        const songImg = document.querySelector('.song-img');
+        const songTitle = document.querySelector('.title-text');
+        const songArtist = document.querySelector('.artist-text');
+        const progressBar = document.querySelector('.progress-bar');
+        const progressFilled = document.querySelector('.progress-filled');
 
-      // console.log(songData.progress_ms)
-      // console.log(songData.item.duration_ms)
-      const duration = songData.currently_playing_type === 'track' ? songData.item.duration_ms : 30000;
-      progressFilled.style.flexBasis = `${(songData.progress_ms / duration) * 100}%`;
+        if (data.currently_playing_type === 'track') {
+          songImg.src = data.item.album.images[0].url;
+          songTitle.textContent = data.item.name;
+          songArtist.textContent = data.item.artists[0].name;
+        } else if (data.currently_playing_type === 'ad') {
+          songImg.src = '/static/squid_tongue_squareFormat.jpg';
+          songTitle.textContent = 'an ad';
+          songArtist.textContent = 'no artist :)';
+        } else {
+          songImg.src = '/static/squid_tongue_squareFormat.jpg';
+          songTitle.textContent = 'nothing here';
+          songArtist.textContent = "Spotify isn't running :)";
+        }
+
+        const duration = data.currently_playing_type === 'track' ? data.item.duration_ms : 30000;
+        progressFilled.style.flexBasis = `${(data.progress_ms / duration) * 100}%`;
+      }
 
       function update() {
-        fetch('./currently_playing.html')
+        fetch('./currently-playing-data')
+          .then(res => res.json())
+          .then(data => {
+            if (!data.error) getSongInfo(data);
+          })
+          .catch(console.error);
+
+        setTimeout(update, 2000);
       }
+
+      update();
     </script>
 
 </body>

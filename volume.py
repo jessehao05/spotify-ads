@@ -9,10 +9,10 @@ from dotenv import load_dotenv
 from datetime import datetime
 from flask import Flask, redirect, request, jsonify, session, render_template
 
+load_dotenv()
+
 app = Flask(__name__)
 app.secret_key = os.getenv("SECRET_KEY")
-
-load_dotenv()
 
 CLIENT_ID = os.getenv("CLIENT_ID")
 CLIENT_SECRET = os.getenv("CLIENT_SECRET")
@@ -22,7 +22,6 @@ AUTH_URL = 'https://accounts.spotify.com/authorize'
 TOKEN_URL = 'https://accounts.spotify.com/api/token'
 API_BASE_URL = 'https://api.spotify.com/v1/me/player/currently-playing'
 
-current_song_data = {}
 
 @app.route('/')
 def index():
@@ -66,8 +65,16 @@ def callback():
 
 @app.route('/currently-playing')
 def get_currently_playing():
+    if 'access_token' not in session:
+        return redirect('/login')
     
-    # while (True):
+    if datetime.now().timestamp() > session['expires_at']:
+        return redirect('/refresh-token')
+    
+    return render_template('currently_playing.html')
+
+@app.route('/currently-playing-data')
+def currently_playing_data():
     if 'access_token' not in session:
         return redirect('/login')
     
@@ -78,18 +85,19 @@ def get_currently_playing():
         'Authorization': f"Bearer {session['access_token']}"
     }
 
-    response = requests.get(API_BASE_URL, headers=headers)
-    currently_playing = response.json()
-    cur_type = currently_playing['currently_playing_type']
+    try: 
+        response = requests.get(API_BASE_URL, headers=headers)
+        currently_playing = response.json()
+        cur_type = currently_playing['currently_playing_type']
 
-    if cur_type == 'track':
-        volume('track')
-    if cur_type == 'ad':
-        volume('ad')
+        if cur_type == 'track':
+            volume('track')
+        if cur_type == 'ad':
+            volume('ad')
 
-        # time.sleep(2)
-        
-    return render_template('currently_playing.html', data = currently_playing)
+        return jsonify(currently_playing)
+    except Exception as e: 
+        return jsonify({'error': str(e)}), 500
 
 
 @app.route('/refresh-token')
