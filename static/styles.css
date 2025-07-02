@@ -1,0 +1,83 @@
+body {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    font-family: 'Outfit', sans-serif;
+}
+
+/* index page */
+
+.center-button {
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 450px;
+    border-radius: 25px;
+
+    background-color: #318A58;
+    font-size: 1.5rem;
+    color: white;
+    text-decoration: none;
+    padding: 1.5rem;
+    box-shadow: rgba(149, 157, 165, 0.5) 0px 8px 24px;
+}
+
+a:hover {
+    background-color: #176238;
+}
+
+/* currently-playing page */
+
+.card {
+    width: 350px;
+    border-radius: 20px;
+    background-color: #B6DFBB;
+    padding: 1.5rem 3rem 1.5rem 3rem;
+    display: flex;
+    flex-direction: column;
+    
+}
+
+.top-text {
+    margin-bottom: .9rem;
+    margin-top: .5rem;
+}
+
+.song-img {
+    width: 100%;
+    border-radius: 20px;
+    border: 2px solid white;
+}
+
+.bottom-text {
+    margin: 2rem 0 2rem 0;
+}
+
+.title-text {
+    font-size: 1.8rem;
+    font-weight: 650;
+    margin-bottom: 0.25rem;
+}
+
+.artist-text {
+    font-size: 1rem;
+    font-weight: 250;
+}
+
+.progress-bar {
+    height: 10px;
+    border-radius: 5px;
+    background-color: #5BC35D;
+    display: flex;
+    margin-bottom: 2rem;
+}
+
+.progress-filled {
+    background-color: #318A58;
+    border-radius: 5px;
+    width: 50%;
+    flex-basis: 37.5%;
+}

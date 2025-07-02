@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap" rel="stylesheet">
+    <title>Spotify: Currently Playing</title>
+</head>
+<body>
+    <div class="card">
+      <div class="top-text">Currently playing: </div>
+      {% if data.currently_playing_type == 'track' %}
+        <img class="song-img" src="{{data.item.album.images[0].url}}">
+      {% else %}
+        <img class="song-img" src="{{ url_for('static', filename='squid_tongue_squareFormat.jpg') }}">
+      {% endif %}
+      <div class="bottom-text">
+        {% if data.currently_playing_type == 'track' %}
+          <div class="title-text">{{data.item.name}}</div>
+          <div class="artist-text">{{data.item.artists[0].name}}</div>
+        {% elif data.currently_playing_type == 'ad' %}
+          <div class="title-text">an ad</div>
+          <div class="artist-text">no artist :)</div>
+        {% else %}
+          <div class="title-text">nothing here</div>
+          <div class="artist-text">Spotify isn't running :)</div>
+        {% endif %}
+      </div>
+      <div class="progress-bar">
+        <div class="progress-filled"></div>
+      </div>
+    </div>
+
+    <script>
+      const songData = {{ data | tojson | safe }};
+      const progressBar = document.querySelector('.progress-bar');
+      const progressFilled = document.querySelector('.progress-filled');
+
+      // console.log(songData.progress_ms)
+      // console.log(songData.item.duration_ms)
+      const duration = songData.currently_playing_type === 'track' ? songData.item.duration_ms : 30000;
+      progressFilled.style.flexBasis = `${(songData.progress_ms / duration) * 100}%`;
+
+      function update() {
+        fetch('./currently_playing.html')
+      }
+    </script>
+
+</body>
+
+</html>
+
+<!-- sample song response:
+  - play song on spotify
+  - visit https://developer.spotify.com/documentation/web-api/reference/get-the-users-currently-playing-track
+-->

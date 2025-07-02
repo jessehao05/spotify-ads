@@ -82,9 +82,9 @@ def get_currently_playing():
         # print("Code: ", response.status_code)
         currently_playing = response.json()
 
-        # print(type(response))
-        # print(type(currently_playing))
-        # print(currently_playing['currently_playing_type'] == 'track')
+        print(type(response))
+        print(type(currently_playing))
+        print(currently_playing['currently_playing_type'] == 'track')
 
         cur_type = currently_playing['currently_playing_type']
 
