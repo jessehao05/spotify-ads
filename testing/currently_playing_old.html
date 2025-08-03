@@ -16,7 +16,9 @@
           <div class="title-text"></div>
           <div class="artist-text"></div>
       </div>
-
+      <div class="progress-bar">
+        <div class="progress-filled"></div>
+      </div>
     </div>
 
     <script>
@@ -24,7 +26,8 @@
         const songImg = document.querySelector('.song-img');
         const songTitle = document.querySelector('.title-text');
         const songArtist = document.querySelector('.artist-text');
-
+        const progressBar = document.querySelector('.progress-bar');
+        const progressFilled = document.querySelector('.progress-filled');
 
         if (data.currently_playing_type === 'track') {
           songImg.src = data.item.album.images[0].url;
@@ -39,49 +42,21 @@
           songTitle.textContent = 'nothing here';
           songArtist.textContent = "Spotify isn't running :)";
         }
+
+        const duration = data.currently_playing_type === 'track' ? data.item.duration_ms : 30000;
+        progressFilled.style.flexBasis = `${(data.progress_ms / duration) * 100}%`;
       }
 
-      function reCheck(data) {
+      function update() {
+        fetch('./currently-playing-data')
+          .then(res => res.json())
+          .then(data => {
+            if (!data.error) getSongInfo(data);
+          })
+          .catch(console.error);
 
-        if (timeoutId) {
-          clearTimeout(timeoutId);
-        }
-      
-        if (data.currently_playing_type === 'track') {
-          // each variable is in seconds & truncated
-          const progress = Math.trunc(data.progress_ms / 1000);
-          const length = Math.trunc(data.item.duration_ms / 1000);
-          const interval = length - progress + 1 
-
-          console.log(`
-            Progress: ${progress} | ${Math.trunc(progress / 60)} mins, ${progress % 60} seconds
-            Song length: ${length} | ${Math.trunc(length / 60)} mins, ${length % 60} seconds
-            Checking next in: ${interval} | ${Math.trunc(interval / 60)} mins, ${interval % 60} seconds 
-          `);
-
-          timeoutId = setTimeout(update, interval * 1000)
-        } else {
-          console.log(`Checking next in: 15 seconds`);
-          timeoutId = setTimeout(update, 15000);
-        }
-  
+        setTimeout(update, 2000);
       }
-
-      async function update() {
-        try {
-          const res = await fetch('./currently-playing-data');
-          const data = await res.json();
-
-          if (!data.error) {
-            getSongInfo(data);
-            reCheck(data);
-          }
-        } catch (error) {
-          console.error(error);
-        }
-      }
-
-      let timeoutId = null;
 
       update();
     </script>

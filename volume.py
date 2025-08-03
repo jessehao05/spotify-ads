@@ -9,7 +9,7 @@ import comtypes
 from pycaw.pycaw import AudioUtilities, ISimpleAudioVolume
 from dotenv import load_dotenv
 from datetime import datetime
-from flask import Flask, redirect, request, jsonify, session, render_template
+from flask import Flask, redirect, request, jsonify, session, render_template, url_for
 
 load_dotenv()
 
@@ -31,6 +31,8 @@ def index():
 
 @app.route('/login')
 def login():
+    # login to spotify account
+    print('LOGGIN IN')
     params = {
         'client_id': CLIENT_ID,
         'response_type': 'code',
@@ -43,10 +45,12 @@ def login():
 
 @app.route('/callback')
 def callback():
+    # callback after login redirect url
     if 'error' in request.args:
         return jsonify({"error": request.args['error']})
     
     if 'code' in request.args: 
+        # send post request to get token info for session
         req_body = {
             'code': request.args['code'],
             'grant_type': 'authorization_code',
@@ -62,27 +66,29 @@ def callback():
         session['refresh_token'] = token_info['refresh_token']
         session['expires_at'] = datetime.now().timestamp() + token_info['expires_in']
 
-        return redirect('/currently-playing')
+        return redirect(url_for('get_currently_playing'))
     
 
 @app.route('/currently-playing')
 def get_currently_playing():
     if 'access_token' not in session:
-        return redirect('/login')
+        return redirect(url_for('login'))
     
     if datetime.now().timestamp() > session['expires_at']:
-        return redirect('/refresh-token')
+        return redirect(url_for('refresh_token'))
     
     return render_template('currently_playing.html')
 
 @app.route('/currently-playing-data')
 def currently_playing_data():
     if 'access_token' not in session:
-        return redirect('/login')
+        return redirect(url_for('login'))
     
     if datetime.now().timestamp() > session['expires_at']:
-        return redirect('/refresh-token')
+        return redirect(url_for('refresh_token'))
     
+    # fetches data from spotify api
+    print('GETTING CURRENTLY PLAYING DATA')
     headers = {
         'Authorization': f"Bearer {session['access_token']}"
     }
@@ -92,6 +98,7 @@ def currently_playing_data():
         currently_playing = response.json()
         cur_type = currently_playing['currently_playing_type']
 
+        # adjust volume based on what's being played
         if cur_type == 'track':
             volume('track')
         if cur_type == 'ad':
@@ -105,10 +112,10 @@ def currently_playing_data():
 @app.route('/refresh-token')
 def refresh_token():
     if 'refresh_token' not in session:
-        redirect('/login')
+        redirect(url_for('login'))
 
     if datetime.now().timestamp() > session['expires_at']:
-        
+        print('GETTING REFRESH TOKEN')
         req_body = {
             'grant_type': 'refresh_token',
             'refresh_token': session['refresh_token'],
@@ -122,7 +129,7 @@ def refresh_token():
         session['access_token'] = new_token_info['access_token']
         session['expires_at'] = datetime.now().timestamp() + new_token_info['expires_in']
 
-        return redirect('/currently-playing')
+        return redirect(url_for('get_currently_playing'))
     
 def volume(action):
     comtypes.CoInitialize()
