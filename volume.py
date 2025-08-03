@@ -1,3 +1,5 @@
+# this script runs every two seconds and displays information on a webpage about the current song/ad
+
 import requests
 import urllib.parse
 import time

@@ -1,3 +1,5 @@
+# script that sends response to spotify api every 2 seconds (infinite loop)
+
 import requests
 import urllib.parse
 import time
